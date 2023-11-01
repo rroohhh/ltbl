@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 
-
-num myShit({required num A, num B}) {
-  return A + B;
-}
-
 void main() {
-  myShit(B = 5, A = 3);
   runApp(const MyApp());
 }
 
