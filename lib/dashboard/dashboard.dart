@@ -8,20 +8,31 @@ class Dashboard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lightState = useState(false);
+    final lightState = useState(true);
+    final brightness = useState(1.0);
+    final z2mService = ref.watch(z2MServiceProvider);
+    final connectionStatus = useFuture(z2mService.connectionStatus);
 
-    final Z2MService service = ref.watch(z2MServiceProvider);
+    useEffect(() {
+      z2mService.setLight(lightState.value, (brightness.value * 256).toInt());
+      return;
+    }, [lightState.value, brightness.value, z2mService]);
 
     return Scaffold(
       body: Column(
         children: [
+          const SizedBox(height: 100),
           Switch(
             value: lightState.value,
             onChanged: (newValue) => lightState.value = newValue,
           ),
-          Text(
-            service.getLampName(),
-          ),
+          Slider(
+              value: brightness.value,
+              onChanged: (newBrightness) => brightness.value = newBrightness),
+          if (connectionStatus.hasData)
+            Text("${connectionStatus.data}")
+          else
+            const CircularProgressIndicator()
         ],
       ),
     );
