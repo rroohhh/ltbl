@@ -15,17 +15,21 @@ class Z2MService {
 
   Z2MService(String serverAddress, String uniqueID, int port)
       : client = MqttServerClient.withPort(serverAddress, uniqueID, port) {
+    client.autoReconnect = true;
     connectionStatus = client.connect();
   }
 
-  void setLight(bool state, int brightness) {
-    client.publishMessage(
-        LightConfig.topic,
-        MqttQos.exactlyOnce,
-        jsonEncode({
-          "state": state ? "ON" : "OFF",
-          "brightness": brightness,
-        }).bytes);
+  void setLight(bool state, int brightness) async {
+    final currStatus = await connectionStatus;
+    if (currStatus?.state == MqttConnectionState.connected) {
+      client.publishMessage(
+          LightConfig.topic,
+          MqttQos.exactlyOnce,
+          jsonEncode({
+            "state": state ? "ON" : "OFF",
+            "brightness": brightness,
+          }).bytes);
+    }
   }
 }
 
