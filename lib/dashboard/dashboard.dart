@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:ltbl/util/async_snapshot_extensions.dart';
 import 'package:ltbl/z2m/z2m_service.dart';
 
 class Dashboard extends HookConsumerWidget {
@@ -27,12 +28,17 @@ class Dashboard extends HookConsumerWidget {
             onChanged: (newValue) => lightState.value = newValue,
           ),
           Slider(
-              value: brightness.value,
-              onChanged: (newBrightness) => brightness.value = newBrightness),
-          if (connectionStatus.hasData)
-            Text("${connectionStatus.data}")
-          else
-            const CircularProgressIndicator()
+            value: brightness.value,
+            onChanged: (newBrightness) => brightness.value = newBrightness,
+          ),
+          connectionStatus.when(
+            onSuccess: (data) => Text("$data"),
+            onError: (error) => Text(
+              "$error",
+              style: const TextStyle(color: Colors.red),
+            ),
+            onLoading: () => const CircularProgressIndicator(),
+          )
         ],
       ),
     );
