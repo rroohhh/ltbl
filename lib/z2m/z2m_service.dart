@@ -19,17 +19,20 @@ class Z2MService {
     connectionStatus = client.connect();
   }
 
-  void setLight(bool state, int brightness) async {
-    final currStatus = await connectionStatus;
-    if (currStatus?.state == MqttConnectionState.connected) {
-      client.publishMessage(
-          LightConfig.topic,
-          MqttQos.exactlyOnce,
-          jsonEncode({
-            "state": state ? "ON" : "OFF",
-            "brightness": brightness,
-          }).bytes);
-    }
+  void setLight(bool state, int brightness) {
+    connectionStatus.then((connectionStatus) => {
+          if (connectionStatus?.state == MqttConnectionState.connected)
+            {
+              client.publishMessage(
+                LightConfig.topic,
+                MqttQos.exactlyOnce,
+                jsonEncode({
+                  "state": state ? "ON" : "OFF",
+                  "brightness": brightness,
+                }).bytes,
+              )
+            }
+        });
   }
 }
 
