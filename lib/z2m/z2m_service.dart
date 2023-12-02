@@ -2,37 +2,36 @@ import 'dart:convert';
 
 import 'package:ltbl/config/light_config.dart';
 import 'package:ltbl/config/server_config.dart';
+import 'package:ltbl/mqtt/mqtt.dart';
 import 'package:ltbl/util/string_extensions.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
-import 'package:mqtt5_client/mqtt5_server_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'z2m_service.g.dart';
 
 class Z2MService {
-  final MqttClient client;
-  late final Future<MqttConnectionStatus?> connectionStatus;
+  final MqttStreamClient _mqttStreamClient;
+  Stream<MqttConnectionStatus> get connectionStatus =>
+      _mqttStreamClient.connectionStatus;
 
   Z2MService(String serverAddress, String uniqueID, int port)
-      : client = MqttServerClient.withPort(serverAddress, uniqueID, port) {
-    client.autoReconnect = true;
-    connectionStatus = client.connect();
+      : _mqttStreamClient = MqttStreamClient(serverAddress, uniqueID, port) {
+    _mqttStreamClient.connect();
   }
 
   void setLight(bool state, int brightness) {
-    connectionStatus.then((connectionStatus) => {
-          if (connectionStatus?.state == MqttConnectionState.connected)
-            {
-              client.publishMessage(
-                LightConfig.topic,
-                MqttQos.exactlyOnce,
-                jsonEncode({
-                  "state": state ? "ON" : "OFF",
-                  "brightness": brightness,
-                }).bytes,
-              )
-            }
-        });
+    try {
+      _mqttStreamClient.publish(
+        LightConfig.topic,
+        MqttQos.exactlyOnce,
+        jsonEncode({
+          "state": state ? "ON" : "OFF",
+          "brightness": brightness,
+        }).bytes,
+      );
+    } catch (e) {
+      print('Schade');
+    }
   }
 }
 
