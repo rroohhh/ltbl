@@ -12,7 +12,7 @@ class Dashboard extends HookConsumerWidget {
     final lightState = useState(true);
     final brightness = useState(1.0);
     final z2mService = ref.watch(z2MServiceProvider);
-    final connectionStatus = useFuture(z2mService.connectionStatus);
+    final connectionStatus = useStream(z2mService.connectionStatus);
 
     useEffect(() {
       z2mService.setLight(lightState.value, (brightness.value * 256).toInt());
