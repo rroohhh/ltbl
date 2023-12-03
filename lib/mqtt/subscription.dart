@@ -15,9 +15,7 @@ class MqttStreamSubscriptionManager {
 
   MqttStreamSubscriptionManager(MqttClient client)
       : _client = client,
-        _updates = client.updates
-            .asBroadcastStream()
-            .asyncExpand(Stream.fromIterable) {
+        _updates = client.updates.asyncExpand(Stream.fromIterable) {
     final StreamController<MqttSubscription> subscriptionsController =
         StreamController.broadcast();
     final StreamController<MqttSubscription> unsubscriptionsController =

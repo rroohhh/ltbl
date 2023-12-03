@@ -14,7 +14,7 @@ typedef ReceivedMessage = MqttReceivedMessage<MqttMessage>;
 class MqttStreamClient {
   late final MqttStreamSubscriptionManager _subscriptionManager;
   final StreamController<MqttConnectionStatus> _connectionStatusController =
-      StreamController();
+      StreamController.broadcast();
   late final Stream<MqttConnectionStatus> connectionStatus;
   final MqttClient _client;
   final String? _username;
@@ -24,16 +24,19 @@ class MqttStreamClient {
     String serverAddress,
     String uniqueID,
     int port, [
-    bool autoReconnect = true,
     String? username,
     String? password,
   ])  : _client = MqttServerClient.withPort(serverAddress, uniqueID, port),
         _username = username,
         _password = password {
-    // TODO: Refactor the connect
-    connect();
+    _client.autoReconnect = true;
+    _client.resubscribeOnAutoReconnect = true;
+
+    // we need to connect before the updates and the published streams
+    // are valid, so just forcibly connect here
+    _connect();
+
     _subscriptionManager = MqttStreamSubscriptionManager(_client);
-    _client.autoReconnect = autoReconnect;
 
     connectionChangedHandler() {
       final status = _client.connectionStatus;
@@ -45,13 +48,12 @@ class MqttStreamClient {
     _client.onDisconnected = connectionChangedHandler;
     _client.onConnected = connectionChangedHandler;
     _client.onAutoReconnect = connectionChangedHandler;
-    // TODO(robin): re subscribe, re listen updates and published
     _client.onAutoReconnected = connectionChangedHandler;
 
     connectionStatus = _connectionStatusController.stream;
   }
 
-  Future<void> connect() async {
+  Future<void> _connect() async {
     try {
       final status = await _client.connect(_username, _password);
       if (status != null) {
@@ -62,7 +64,12 @@ class MqttStreamClient {
     }
   }
 
-  Future<MqttStreamSubscription> subscribe(String topic, MqttQos qos) {
+  Future<MqttStreamSubscription> subscribe(String topic, MqttQos qos) async {
+    if (!(_client.connectionStatus?.state == MqttConnectionState.connected)) {
+      await connectionStatus.firstWhere(
+          (status) => status.state == MqttConnectionState.connected);
+    }
+
     return _subscriptionManager.subscribe(topic, qos);
   }
 
@@ -77,5 +84,9 @@ class MqttStreamClient {
     final messageID = _client.publishMessage(topic, qos, data);
     return publishedSingleStream!.firstWhere(
         (element) => element.variableHeader!.messageIdentifier == messageID);
+  }
+
+  void doReconnect() {
+    _client.doAutoReconnect(force: true);
   }
 }
