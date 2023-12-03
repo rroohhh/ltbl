@@ -15,10 +15,9 @@ class MqttStreamClient {
   late final MqttStreamSubscriptionManager _subscriptionManager;
   final StreamController<MqttConnectionStatus> _connectionStatusController =
       StreamController.broadcast();
-  Stream<MqttConnectionStatus> get connectionStatus => _connectionStatusController.stream;
+  Stream<MqttConnectionStatus> get connectionStatus =>
+      _connectionStatusController.stream;
   final MqttClient _client;
-  final String? _username;
-  final String? _password;
 
   MqttStreamClient(
     String serverAddress,
@@ -26,16 +25,14 @@ class MqttStreamClient {
     int port, [
     String? username,
     String? password,
-  ])  : _client = MqttServerClient.withPort(serverAddress, uniqueID, port),
-        _username = username,
-        _password = password {
+  ]) : _client = MqttServerClient.withPort(serverAddress, uniqueID, port) {
     _client.autoReconnect = true;
     _client.resubscribeOnAutoReconnect = true;
 
     // we need call connect for the updates and the published streams
     // to be valid, so just forcibly connect here to be able
     // to listen to them already in the constructor
-    _connect();
+    _connect(username, password);
 
     _subscriptionManager = MqttStreamSubscriptionManager(_client);
 
@@ -50,13 +47,11 @@ class MqttStreamClient {
     _client.onConnected = connectionChangedHandler;
     _client.onAutoReconnect = connectionChangedHandler;
     _client.onAutoReconnected = connectionChangedHandler;
-
-    connectionStatus = _connectionStatusController.stream;
   }
 
-  Future<void> _connect() async {
+  Future<void> _connect(String? username, String? password) async {
     try {
-      final status = await _client.connect(_username, _password);
+      final status = await _client.connect(username, password);
       if (status != null) {
         _connectionStatusController.add(status);
       }
