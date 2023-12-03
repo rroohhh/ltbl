@@ -15,7 +15,7 @@ class MqttStreamClient {
   late final MqttStreamSubscriptionManager _subscriptionManager;
   final StreamController<MqttConnectionStatus> _connectionStatusController =
       StreamController.broadcast();
-  late final Stream<MqttConnectionStatus> connectionStatus;
+  Stream<MqttConnectionStatus> get connectionStatus => _connectionStatusController.stream;
   final MqttClient _client;
   final String? _username;
   final String? _password;
@@ -32,8 +32,9 @@ class MqttStreamClient {
     _client.autoReconnect = true;
     _client.resubscribeOnAutoReconnect = true;
 
-    // we need to connect before the updates and the published streams
-    // are valid, so just forcibly connect here
+    // we need call connect for the updates and the published streams
+    // to be valid, so just forcibly connect here to be able
+    // to listen to them already in the constructor
     _connect();
 
     _subscriptionManager = MqttStreamSubscriptionManager(_client);
