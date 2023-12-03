@@ -6,8 +6,9 @@ extension WhenExtension<DATA> on AsyncSnapshot<DATA> {
     required T Function(Object error) onError,
     required T Function() onLoading,
   }) {
-    if (hasData) {
-      return onSuccess(data!);
+    final currentData = data;
+    if (currentData != null) {
+      return onSuccess(currentData);
     } else if (hasError) {
       return onError(error!);
     } else {

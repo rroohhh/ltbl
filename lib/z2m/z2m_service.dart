@@ -15,23 +15,39 @@ class Z2MService {
       _mqttStreamClient.connectionStatus;
 
   Z2MService(String serverAddress, String uniqueID, int port)
-      : _mqttStreamClient = MqttStreamClient(serverAddress, uniqueID, port) {
-    _mqttStreamClient.connect();
+      : _mqttStreamClient = MqttStreamClient(serverAddress, uniqueID, port);
+
+  Future<void> setLight(bool state, int brightness) async {
+    await _mqttStreamClient.publish(
+      "${LightConfig.topic}/set",
+      MqttQos.exactlyOnce,
+      jsonEncode({
+        "state": state ? "ON" : "OFF",
+        "brightness": brightness,
+      }).bytes,
+    );
   }
 
-  void setLight(bool state, int brightness) {
-    try {
-      _mqttStreamClient.publish(
-        LightConfig.topic,
-        MqttQos.exactlyOnce,
-        jsonEncode({
-          "state": state ? "ON" : "OFF",
-          "brightness": brightness,
-        }).bytes,
-      );
-    } catch (e) {
-      print('Schade');
-    }
+  Future<MqttStreamSubscription> subscribeLight() async {
+    final result = await _mqttStreamClient.subscribe(
+      LightConfig.topic,
+      MqttQos.atLeastOnce,
+    );
+
+    await _mqttStreamClient.publish(
+      "${LightConfig.topic}/get",
+      MqttQos.exactlyOnce,
+      jsonEncode({
+        "state": "",
+        "brightness": "",
+      }).bytes,
+    );
+
+    return result;
+  }
+
+  void doReconnect() {
+    _mqttStreamClient.doReconnect();
   }
 }
 
