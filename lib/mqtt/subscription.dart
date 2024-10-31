@@ -7,6 +7,8 @@ class MqttStreamSubscription {
   MqttStreamSubscription(this.stream, this.topic);
 }
 
+// Subscription manager holding the subscribed and unsubscribed topics
+// and sort the updates to the correct subscription
 class MqttStreamSubscriptionManager {
   late final Stream<MqttSubscription> _subscriptions;
   late final Stream<MqttSubscription> _unsubscriptions;

@@ -3,8 +3,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ltbl/mqtt/mqtt.dart';
 import 'package:ltbl/util/async_snapshot_extensions.dart';
+import 'package:ltbl/z2m/model/device.dart';
 import 'package:ltbl/z2m/z2m_service.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
+import 'package:typed_data/typed_buffers.dart';
 
 class Dashboard extends HookConsumerWidget {
   const Dashboard({super.key});
@@ -18,6 +20,9 @@ class Dashboard extends HookConsumerWidget {
     final subscriptionInfo = useState<MqttStreamSubscription?>(null);
     final testStream =
         useStream<ReceivedMessage>(subscriptionInfo.value?.stream);
+    final deviceInfoSub = useState<MqttStreamSubscription?>(null);
+    final deviceInfoStream =
+        useStream<ReceivedMessage>(deviceInfoSub.value?.stream);
 
     useEffect(() {
       z2mService
@@ -32,6 +37,9 @@ class Dashboard extends HookConsumerWidget {
     useEffect(() {
       z2mService.subscribeLight().then((value) {
         subscriptionInfo.value = value;
+      });
+      z2mService.getAllDevices().then((value) {
+        deviceInfoSub.value = value;
       });
       return;
     }, [connectionStatus, z2mService]);
@@ -78,7 +86,22 @@ class Dashboard extends HookConsumerWidget {
               style: const TextStyle(color: Colors.red),
             ),
             onLoading: () => const CircularProgressIndicator(),
-          )
+          ),
+          deviceInfoStream.when(
+            onSuccess: (data) {
+              final publishMessage = data.payload as MqttPublishMessage;
+              var devicesMsg = MqttUtilities.bytesToStringAsString(
+                  publishMessage.payload.message!);
+              var devices = DeviceList.fromString(devicesMsg).lampDevices;
+              return Text(
+                  "Devices: ${devices.map((e) => e.friendlyName).join(", ")}");
+            },
+            onError: (error) => Text(
+              "$error",
+              style: const TextStyle(color: Colors.red),
+            ),
+            onLoading: () => const CircularProgressIndicator(),
+          ),
         ],
       ),
     );

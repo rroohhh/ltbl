@@ -7,9 +7,12 @@ import 'package:ltbl/util/string_extensions.dart';
 import 'package:ltbl/z2m/light_properties.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:typed_data/typed_buffers.dart';
 
 part 'z2m_service.g.dart';
 
+// Service to interact with Zigbee2MQTT Broker
+// Docs https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html
 class Z2MService {
   final MqttStreamClient _mqttStreamClient;
   Stream<MqttConnectionStatus> get connectionStatus =>
@@ -41,6 +44,17 @@ class Z2MService {
     );
 
     return result;
+  }
+
+  Future<void> unsubscribeLight(MqttStreamSubscription subscription) async {
+    return await _mqttStreamClient.unsubscribe(subscription);
+  }
+
+  Future<MqttStreamSubscription> getAllDevices() async {
+    return await _mqttStreamClient.subscribe(
+      'zigbee2mqtt/bridge/devices',
+      MqttQos.atLeastOnce,
+    );
   }
 
   void doReconnect() {
