@@ -21,9 +21,9 @@ class Z2MService {
   Z2MService(String serverAddress, String uniqueID, int port)
       : _mqttStreamClient = MqttStreamClient(serverAddress, uniqueID, port);
 
-  Future<void> setLight(bool state, int brightness) async {
+  Future<void> setLight(bool state, int brightness, String topic) async {
     await _mqttStreamClient.publish(
-      "${LightConfig.topic}/set",
+      "${LightConfig.topicPrefix}/$topic/set",
       MqttQos.exactlyOnce,
       jsonEncode(LightProperties(
               state: LightState.fromBool(state), brightness: brightness))
@@ -31,14 +31,14 @@ class Z2MService {
     );
   }
 
-  Future<MqttStreamSubscription> subscribeLight() async {
+  Future<MqttStreamSubscription> subscribeLight(String topicName) async {
     final result = await _mqttStreamClient.subscribe(
-      LightConfig.topic,
+      "${LightConfig.topicPrefix}/$topicName",
       MqttQos.atLeastOnce,
     );
 
     await _mqttStreamClient.publish(
-      "${LightConfig.topic}/get",
+      "${LightConfig.topicPrefix}/$topicName/get",
       MqttQos.exactlyOnce,
       jsonEncode(LightProperties(state: LightState.off, brightness: 0)).bytes,
     );
