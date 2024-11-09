@@ -61,28 +61,34 @@ class MqttStreamClient {
   }
 
   Future<MqttStreamSubscription> subscribe(String topic, MqttQos qos) async {
-    if (!(_client.connectionStatus?.state == MqttConnectionState.connected)) {
-      await connectionStatus.firstWhere(
-          (status) => status.state == MqttConnectionState.connected);
-    }
+    await waitForConnection();
 
     return _subscriptionManager.subscribe(topic, qos);
   }
 
-  Future<void> unsubscribe(MqttStreamSubscription subscription) {
+  Future<void> unsubscribe(MqttStreamSubscription subscription) async {
+    await waitForConnection();
     return _subscriptionManager.unsubscribe(subscription);
   }
 
   Future<MqttPublishMessage> publish(
       String topic, MqttQos qos, Uint8Buffer data,
-      {bool retain = false, List<MqttUserProperty>? userProperties}) {
+      {bool retain = false, List<MqttUserProperty>? userProperties}) async {
+    await waitForConnection();
     final publishedSingleStream = _client.published?.toSingleStream();
     final messageID = _client.publishMessage(topic, qos, data);
-    return publishedSingleStream!.firstWhere(
+    return await publishedSingleStream!.firstWhere(
         (element) => element.variableHeader!.messageIdentifier == messageID);
   }
 
   void doReconnect() {
     _client.doAutoReconnect(force: true);
+  }
+
+  Future<void> waitForConnection() async {
+    if (!(_client.connectionStatus?.state == MqttConnectionState.connected)) {
+      await connectionStatus.firstWhere(
+          (status) => status.state == MqttConnectionState.connected);
+    }
   }
 }
