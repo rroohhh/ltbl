@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'dto.dart';
+part of 'light_properties.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

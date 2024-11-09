@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'dto.g.dart';
+part 'light_properties.g.dart';
 
 @JsonEnum()
 enum LightState {
