@@ -4,6 +4,7 @@ import 'package:ltbl/config/light_config.dart';
 import 'package:ltbl/config/server_config.dart';
 import 'package:ltbl/mqtt/mqtt.dart';
 import 'package:ltbl/util/string_extensions.dart';
+import 'package:ltbl/z2m/dto.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -21,10 +22,9 @@ class Z2MService {
     await _mqttStreamClient.publish(
       "${LightConfig.topic}/set",
       MqttQos.exactlyOnce,
-      jsonEncode({
-        "state": state ? "ON" : "OFF",
-        "brightness": brightness,
-      }).bytes,
+      jsonEncode(LightProperties(
+              state: LightState.fromBool(state), brightness: brightness))
+          .bytes,
     );
   }
 
@@ -37,10 +37,7 @@ class Z2MService {
     await _mqttStreamClient.publish(
       "${LightConfig.topic}/get",
       MqttQos.exactlyOnce,
-      jsonEncode({
-        "state": "",
-        "brightness": "",
-      }).bytes,
+      jsonEncode(LightProperties(state: LightState.off, brightness: 0)).bytes,
     );
 
     return result;
