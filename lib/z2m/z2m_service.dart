@@ -4,10 +4,9 @@ import 'package:ltbl/config/light_config.dart';
 import 'package:ltbl/config/server_config.dart';
 import 'package:ltbl/mqtt/mqtt.dart';
 import 'package:ltbl/util/string_extensions.dart';
-import 'package:ltbl/z2m/light_properties.dart';
+import 'package:ltbl/z2m/model/light_properties.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:typed_data/typed_buffers.dart';
 
 part 'z2m_service.g.dart';
 
