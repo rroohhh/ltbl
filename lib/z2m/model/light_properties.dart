@@ -22,14 +22,16 @@ enum LightState {
 class LightProperties {
   @JsonKey(includeIfNull: false)
   final LightState? state;
+
   @JsonKey(includeIfNull: false)
   final int? brightness;
-  @JsonKey(includeIfNull: false)
-  final int? temperature;
+
+  @JsonKey(includeIfNull: false, name: "color_temp")
+  final int? colorTemp;
 
   factory LightProperties.fromJson(Map<String, dynamic> json) =>
       _$LightPropertiesFromJson(json);
 
-  LightProperties({this.state, this.brightness, this.temperature});
+  LightProperties({this.state, this.brightness, this.colorTemp});
   Map<String, dynamic> toJson() => _$LightPropertiesToJson(this);
 }

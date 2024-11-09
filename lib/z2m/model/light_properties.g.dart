@@ -10,7 +10,7 @@ LightProperties _$LightPropertiesFromJson(Map<String, dynamic> json) =>
     LightProperties(
       state: $enumDecodeNullable(_$LightStateEnumMap, json['state']),
       brightness: json['brightness'] as int?,
-      temperature: json['temperature'] as int?,
+      colorTemp: json['color_temp'] as int?,
     );
 
 Map<String, dynamic> _$LightPropertiesToJson(LightProperties instance) {
@@ -24,7 +24,7 @@ Map<String, dynamic> _$LightPropertiesToJson(LightProperties instance) {
 
   writeNotNull('state', _$LightStateEnumMap[instance.state]);
   writeNotNull('brightness', instance.brightness);
-  writeNotNull('temperature', instance.temperature);
+  writeNotNull('color_temp', instance.colorTemp);
   return val;
 }
 

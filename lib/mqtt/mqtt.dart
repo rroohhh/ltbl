@@ -11,6 +11,9 @@ part './subscription.dart';
 
 typedef ReceivedMessage = MqttReceivedMessage<MqttMessage>;
 
+// Stream client wrap around the MQQT client to put the updates in a stream
+// format be be consumed easily.
+// https://pub.dev/documentation/mqtt5_client/latest/mqtt5_client/mqtt5_client-library.html
 class MqttStreamClient {
   late final MqttStreamSubscriptionManager _subscriptionManager;
   final StreamController<MqttConnectionStatus> _connectionStatusController =
