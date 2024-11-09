@@ -51,7 +51,7 @@ class Z2MService {
 
   Future<MqttStreamSubscription> getAllDevices() async {
     return await _mqttStreamClient.subscribe(
-      'zigbee2mqtt/bridge/devices',
+      '${LightConfig.topicPrefix}/bridge/devices',
       MqttQos.atLeastOnce,
     );
   }
