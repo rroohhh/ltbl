@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ltbl/mqtt/mqtt.dart';
 import 'package:ltbl/util/async_snapshot_extensions.dart';
 import 'package:ltbl/z2m/model/device.dart';
-import 'package:ltbl/z2m/model/light-status.dart';
+import 'package:ltbl/z2m/model/light_properties.dart';
 import 'package:ltbl/z2m/z2m_service.dart';
 import 'package:mqtt5_client/mqtt5_client.dart';
 
@@ -47,10 +47,10 @@ class SimpleControl extends HookConsumerWidget {
 
     lightStream.when(onSuccess: (data) {
       final publishMessage = data.payload as MqttPublishMessage;
-      var lightMsg =
+      final lightMsg =
           MqttUtilities.bytesToStringAsString(publishMessage.payload.message!);
-      var light = LightStatus.fromJson(json.decode(lightMsg.trim()));
-      lightState.value = light.state == 'ON';
+      final light = LightProperties.fromJson(jsonDecode(lightMsg));
+      lightState.value = light.state == LightState.on;
       brightness.value = light.brightness! / 256;
     }, onError: (error) {
       ScaffoldMessenger.of(context)
@@ -65,7 +65,7 @@ class SimpleControl extends HookConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             ListTile(
-              title: Text(currentDevice.friendlyName),
+              title: Text(currentDevice.friendlyName ?? 'unknown'),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
